@@ -21,15 +21,9 @@ class FindOccurences
         CreateHttpClient();
         Console.WriteLine("HttpClient created");
         
-        
-        pathOfJsAndTsFiles.Add("https://api.github.com/repos/lodash/lodash/contents/.markdown-doctest-setup.js?ref=main");
-        pathOfJsAndTsFiles.Add("https://api.github.com/repos/lodash/lodash/contents/dist/lodash.core.min.js?ref=main");
-        pathOfJsAndTsFiles.Add("https://api.github.com/repos/lodash/lodash/contents/dist/lodash.core.js?ref=main");
-        pathOfJsAndTsFiles.Add("https://api.github.com/repos/lodash/lodash/contents/dist/lodash.fp.js?ref=main");
-        
         try
         {
-            //await AssessContentUnderUrl(baseRepoUrl);
+            await AssessContentUnderUrl(baseRepoUrl);
             Console.WriteLine($"There are {pathOfJsAndTsFiles.Count} .js/.ts files");
             
             // parsing each js/ts file and contains each occurence of letter
