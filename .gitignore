@@ -3,6 +3,7 @@ bin/
 obj/
 
 /businessCase.sln
+businessCase.*
 
 .DS_Store
 .idea
