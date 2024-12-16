@@ -17,7 +17,6 @@ class FindOccurences
     static async Task Main(string[] args)
     {
         Console.WriteLine("Begin Find Occurences");
-        
         CreateHttpClient();
         Console.WriteLine("HttpClient created");
         
@@ -30,7 +29,7 @@ class FindOccurences
             foreach (var jsOrTsPath in pathOfJsAndTsFiles)
             {
                 Console.WriteLine($"{jsOrTsPath}");
-                GitHubContent fileInfo = await GetPathContentForAFile(jsOrTsPath);
+                GitHubContent fileInfo = await GetPathContent(jsOrTsPath, new GitHubContent());
                 var decodedContent = Encoding.UTF8.GetString(Convert.FromBase64String(fileInfo.content));
                 foreach (char c in decodedContent)
                 {
@@ -76,7 +75,7 @@ class FindOccurences
         client.DefaultRequestHeaders.UserAgent.ParseAdd("FindOccurences/1.0.0");
     } 
 
-    private static async Task<List<GitHubContent>> GetPathContent(string path)
+    private static async Task<T> GetPathContent<T>(string path, T returnedType)
     {
         // Make the GET request
         Console.WriteLine("Getting path content for path: " + path);
@@ -84,20 +83,9 @@ class FindOccurences
         response.EnsureSuccessStatusCode();
         var json = await response.Content.ReadAsStringAsync();
         // Mapping of the response (type, path, content)
-        return JsonSerializer.Deserialize<List<GitHubContent>>(json);
+        return JsonSerializer.Deserialize<T>(json);
     }
     
-    private static async Task<GitHubContent> GetPathContentForAFile(string path)
-    {
-        // Make the GET request
-        Console.WriteLine("Getting path content for path: " + path);
-        HttpResponseMessage response = await client.GetAsync(path);
-        response.EnsureSuccessStatusCode();
-        var json = await response.Content.ReadAsStringAsync();
-        // Mapping of the response (type, path, content)
-        return JsonSerializer.Deserialize<GitHubContent>(json);
-    }
-
     private static void SavePathForJsAndTsFile(GitHubContent content)
     {
         if (content.name.EndsWith(".js") || content.name.EndsWith(".ts"))
@@ -108,7 +96,7 @@ class FindOccurences
 
     private static async Task AssessContentUnderUrl(string url)
     {
-        List<GitHubContent> gitHubContents = await GetPathContent(url);
+        List<GitHubContent> gitHubContents = await GetPathContent(url, new List<GitHubContent>() );
             
         foreach (var content in gitHubContents)
         {
