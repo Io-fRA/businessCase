@@ -8,21 +8,59 @@ namespace businessCase;
 class FindOccurences
 {
     
-    static string githubApiToken = "API_KEY_GITHUB";
+    static string githubApiToken = "API_TOKEN_GITHUB";
     static string baseRepoUrl = "https://api.github.com/repos/lodash/lodash/contents";
     static List<string> pathOfJsAndTsFiles = new List<string>();
     private static HttpClient client;
+    private static Dictionary<char, int> letterOccurrences = new Dictionary<char, int>();
     
     static async Task Main(string[] args)
     {
         Console.WriteLine("Begin Find Occurences");
+        
         CreateHttpClient();
         Console.WriteLine("HttpClient created");
         
+        
+        pathOfJsAndTsFiles.Add("https://api.github.com/repos/lodash/lodash/contents/.markdown-doctest-setup.js?ref=main");
+        pathOfJsAndTsFiles.Add("https://api.github.com/repos/lodash/lodash/contents/dist/lodash.core.min.js?ref=main");
+        pathOfJsAndTsFiles.Add("https://api.github.com/repos/lodash/lodash/contents/dist/lodash.core.js?ref=main");
+        pathOfJsAndTsFiles.Add("https://api.github.com/repos/lodash/lodash/contents/dist/lodash.fp.js?ref=main");
+        
         try
         {
-            await AssessContentUnderUrl(baseRepoUrl);
+            //await AssessContentUnderUrl(baseRepoUrl);
             Console.WriteLine($"There are {pathOfJsAndTsFiles.Count} .js/.ts files");
+            
+            // parsing each js/ts file and contains each occurence of letter
+            foreach (var jsOrTsPath in pathOfJsAndTsFiles)
+            {
+                Console.WriteLine($"{jsOrTsPath}");
+                GitHubContent fileInfo = await GetPathContentForAFile(jsOrTsPath);
+                var decodedContent = Encoding.UTF8.GetString(Convert.FromBase64String(fileInfo.content));
+                foreach (char c in decodedContent)
+                {
+                    if (char.IsLetter(c))
+                    {
+                        if (letterOccurrences.ContainsKey(char.ToLower(c)))
+                        {
+                            letterOccurrences[char.ToLower(c)]++;
+                        }
+                        else
+                        {
+                            letterOccurrences[c] = 1;
+                        }
+                    }
+                }
+            }
+            var sortedDictionary = letterOccurrences
+                .OrderByDescending(pair => pair.Value)
+                .ToList();
+            
+            foreach (var pair in sortedDictionary)
+            {
+                Console.WriteLine($"Key: {pair.Key}, Value: {pair.Value}");
+            }
         }
         catch (HttpRequestException ex)
         {
@@ -30,17 +68,7 @@ class FindOccurences
         }
         
     }
-
-    private static void PrintObject(object obj)
-    {
-        foreach(PropertyDescriptor descriptor in TypeDescriptor.GetProperties(obj))
-        {
-            string name = descriptor.Name;
-            object value = descriptor.GetValue(obj);
-            Console.WriteLine("{0}={1}", name, value);
-        }
-    }
-
+    
     private static void CreateHttpClient()
     {
         client = new HttpClient();
@@ -63,6 +91,17 @@ class FindOccurences
         var json = await response.Content.ReadAsStringAsync();
         // Mapping of the response (type, path, content)
         return JsonSerializer.Deserialize<List<GitHubContent>>(json);
+    }
+    
+    private static async Task<GitHubContent> GetPathContentForAFile(string path)
+    {
+        // Make the GET request
+        Console.WriteLine("Getting path content for path: " + path);
+        HttpResponseMessage response = await client.GetAsync(path);
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadAsStringAsync();
+        // Mapping of the response (type, path, content)
+        return JsonSerializer.Deserialize<GitHubContent>(json);
     }
 
     private static void SavePathForJsAndTsFile(GitHubContent content)
