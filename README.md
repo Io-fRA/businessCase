@@ -48,5 +48,5 @@ Key: Æ, Value: 1
 
 
 IMPROVEMENTS:
-- Way to many call of the GitHub API
+- Way to many calls to the GitHub API
 - Time complexity and space complexity
