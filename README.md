@@ -46,6 +46,8 @@ Key: ñ, Value: 2
 Key: W, Value: 1  
 Key: Æ, Value: 1  
 
+![img_1.png](img_1.png)
+Wikipedia letter frequency for the English language (https://en.wikipedia.org/wiki/Letter_frequency)
 
 IMPROVEMENTS:
 - Way to many calls to the GitHub API
